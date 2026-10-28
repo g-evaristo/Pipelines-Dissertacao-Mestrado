@@ -1,251 +1,162 @@
-# 📚 Dissertação de Mestrado — Padrões de Escrita Científica em Artigos de Computação
+# Modelo Computacional para Identificação e Caracterização de Perfis de Escrita em Periódicos Científicos de Computação
 
-Projeto de dissertação voltado à análise automática de padrões de escrita científica em artigos da área de Computação, com foco em extração textual, exploração lexical, análise temática e identificação de movimentos retóricos por meio de regras linguísticas interpretáveis.
+Projeto desenvolvido no âmbito de uma dissertação de **Mestrado em Ciência da Computação**, na Universidade Tecnológica Federal do Paraná (UTFPR), com o objetivo de investigar padrões recorrentes em artigos científicos por meio de **Processamento de Linguagem Natural (PLN)** e **Aprendizado de Máquina Não Supervisionado**.
 
-## 🎯 Objetivo
+A pesquisa propõe um processo computacional para extrair, representar, agrupar e caracterizar artigos publicados em diferentes periódicos da área da Computação, considerando características lexicais, semânticas e estruturais. A análise busca identificar similaridades e diferenças entre os documentos e investigar como os agrupamentos se distribuem entre os periódicos.
 
-Investigar padrões gerais de escrita científica em um corpus de artigos acadêmicos da ACM, observando como os textos apresentam contexto, lacunas, objetivos, métodos, resultados, conclusões, conectores discursivos e perfis de estilo.
+## Objetivo
 
-A proposta central é priorizar uma abordagem interpretável baseada em regras linguísticas, usando técnicas como TF-IDF, n-grams e embeddings BERT como apoio exploratório ou baseline.
+Propor e avaliar um modelo computacional baseado em PLN capaz de identificar padrões recorrentes nos artigos e caracterizar perfis de publicação em periódicos científicos da área da Computação.
 
-## 🧾 Corpus analisado
+Os objetivos específicos incluem sistematizar um processo reprodutível de análise textual, comparar representações e algoritmos de agrupamento e interpretar os perfis identificados em relação às características dos documentos e aos periódicos de origem.
 
-O corpus contém **800 artigos científicos** extraídos de periódicos da ACM, organizados principalmente entre **2021 e 2024**.
+## Corpus de pesquisa
 
-| Ano | Quantidade | Percentual aproximado |
+O corpus é composto por **800 artigos científicos**, selecionados por **amostragem não probabilística baseada na recência**, com 100 documentos de cada um dos oito periódicos. A seleção considerou periódicos classificados no estrato **A1 do Qualis CAPES (quadriênio 2021–2024)**, na área de Computação. Os artigos selecionados foram publicados entre **2024 e 2026**.
+
+| Periódico | Artigos |
+|---|---:|
+| ACM Computing Surveys | 100 |
+| Computer Science Review | 100 |
+| Education and Information Technologies | 100 |
+| ICT Express | 100 |
+| IEEE Communications Surveys and Tutorials | 100 |
+| Information Sciences | 100 |
+| ISA Transactions | 100 |
+| Proceedings of the IEEE | 100 |
+| **Total** | **800** |
+
+### Distribuição por ano
+
+| Ano | Artigos | Percentual |
 |---:|---:|---:|
-| 2021 | 8 | 1,00% |
-| 2022 | 41 | 5,13% |
-| 2023 | 130 | 16,25% |
-| 2024 | 621 | 77,63% |
+| 2024 | 157 | 19,63% |
+| 2025 | 593 | 74,13% |
+| 2026 | 50 | 6,25% |
+| **Total** | **800** | **100%** |
 
-### 🗂️ Periódicos contemplados
+*Os percentuais são arredondados e podem apresentar pequena diferença na soma.*
 
-- ACM Computing Surveys
-- ACM Transactions on Computing Education
-- ACM Transactions on Graphics
-- ACM Transactions on Intelligent Systems and Technology
-- ACM Transactions on Internet Technology
-- ACM Transactions on Multimedia Computing, Communications and Applications
-- ACM Transactions on Software Engineering and Methodology
-- ACM Transactions on Spatial Algorithms and Systems
+## Metodologia
 
-## 🧪 Arquivos
+A pesquisa foi organizada em três fases: **descritiva**, dedicada à revisão da literatura; **experimental**, voltada à construção do corpus e ao desenvolvimento do modelo; e **analítica**, destinada à avaliação e interpretação dos agrupamentos.
 
-| Arquivo | Função no projeto |
-|---|---|
-| `leitura_pdfs_transformar_csv.ipynb` | Extrai texto dos PDFs com PyPDF2 e gera a base `textos_pdfs.csv`. |
-| `análises_iniciais_mestrado.ipynb` | Resume a distribuição dos artigos por periódico e ano. |
-| `analises_artigos_csv.ipynb` | Faz análises exploratórias: limpeza textual, top words, keywords, n-grams, seções, TF-IDF, BERT e métricas iniciais de estilo. |
-| `pipeline_padroes_gerais_escrita_cientifica.ipynb` | Implementa o pipeline principal de padrões retóricos, conectores, perfis de escrita, clustering por estilo e exportação dos resultados. |
-
-## ⚙️ Pipeline geral
+O processamento computacional foi estruturado em dois pipelines, implementados em **Python** e executados no **Google Colab**, com integração ao **Google Drive**.
 
 ```mermaid
 flowchart TD
-    A[PDFs dos artigos ACM] --> B[Extração textual com PyPDF2]
-    B --> C[textos_pdfs.csv]
-    C --> D[Limpeza e normalização textual]
-    D --> E[Análises exploratórias]
-    D --> F[Regras linguísticas interpretáveis]
-    E --> G[TF-IDF, n-grams e BERT]
-    F --> H[Padrões retóricos e conectores]
-    H --> I[Perfil de escrita por artigo]
-    I --> J[Clusters de estilo]
-    J --> K[Exportação de CSVs e síntese em Markdown]
+    A[800 artigos científicos em PDF] --> B[Pipeline 1: extração de texto]
+    B --> C[Corpus estruturado em CSV]
+    C --> D[Pipeline 2: validação e pré-processamento]
+    D --> E[Cinco representações dos artigos]
+    E --> F[K-means, Hierárquico e DBSCAN]
+    F --> G[Avaliação por silhueta, Davies-Bouldin e Calinski-Harabasz]
+    G --> H[Seleção: K-means estrutural, k = 4]
+    H --> I[Caracterização dos grupos e comparação entre periódicos]
+    D --> J[Análises temáticas e metodológicas exploratórias]
+    J --> I
 ```
 
-## 🧹 Pré-processamento
+### Pipeline 1 — Extração textual
 
-As etapas de limpeza incluem:
+- Organização dos arquivos PDF em pastas por periódico.
+- Localização recursiva dos documentos no Google Drive.
+- Extração do texto de cada página com `PyPDF2`.
+- Processamento paralelo por meio de `ThreadPoolExecutor`.
+- Registro do caminho do arquivo, do conteúdo extraído e do status de processamento.
+- Consolidação dos dados em formato CSV para utilização no segundo pipeline.
 
-- remoção de quebras de linha e múltiplos espaços;
-- correção de ruídos de extração, como `hps`;
-- remoção de URLs, DOI, metadados editoriais e fragmentos ACM recorrentes;
-- remoção aproximada de referências, bibliografia e agradecimentos;
-- segmentação do texto em sentenças;
-- filtragem de sentenças muito curtas ou ruidosas.
+### Pipeline 2 — Pré-processamento e análise
 
-## 🔎 Análises exploratórias
+1. **Carregamento e validação:** leitura do CSV, exclusão de registros inválidos ou duplicados e identificação do periódico e do ano de publicação.
+2. **Limpeza textual:** remoção de referências bibliográficas, identificadores, metadados editoriais, URLs, citações numéricas e outros ruídos da extração dos PDFs.
+3. **Pré-processamento por representação:** normalização, tokenização, remoção de *stopwords* e lematização para BoW e TF-IDF; preservação mais ampla da estrutura linguística para *embeddings*.
+4. **Representação vetorial:** construção de cinco conjuntos de atributos dos documentos.
+5. **Agrupamento:** aplicação e comparação de K-means, Agrupamento Hierárquico e DBSCAN.
+6. **Avaliação e interpretação:** seleção dos agrupamentos, análise de indicadores estruturais e descrição temática e metodológica dos grupos.
 
-O notebook `analises_artigos_csv.ipynb` executa análises iniciais para compreender o corpus.
+## Representações dos artigos
 
-### 🧠 Top keywords normalizadas
+| Representação | Características | Dimensões |
+|---|---|---:|
+| Bag of Words (BoW) | Frequência de termos | 6.000 |
+| TF-IDF | Relevância dos termos no corpus | 6.000 |
+| Embeddings contextuais | Representação semântica com `all-MiniLM-L6-v2` | 384 |
+| Estrutural | Indicadores da organização documental | 17 |
+| Híbrida | Concatenação de embeddings e indicadores estruturais | 401 |
 
-As principais keywords identificadas incluem:
+As representações BoW e TF-IDF utilizaram vocabulário limitado a 6.000 atributos. Para os *embeddings*, os textos foram divididos em segmentos de aproximadamente 250 palavras, com até 16 segmentos por artigo, posteriormente agregados em um único vetor. Os indicadores estruturais incluem características como extensão do texto, quantidade de figuras, tabelas, equações e densidade de citações e elementos numéricos.
 
-- deep learning
-- machine learning
-- federated learning
-- privacy
-- blockchain
-- covid-19
-- recommender systems
-- security
-- software testing
-- neural networks
-- internet of things
+## Agrupamento e avaliação
 
-### 🧩 N-grams frequentes
+Foram avaliados os algoritmos **K-means**, **Agrupamento Hierárquico** e **DBSCAN**, considerando diferentes configurações e parâmetros. A métrica principal foi o **coeficiente de silhueta**, calculado com distância de cosseno, complementado pelos índices **Davies-Bouldin** e **Calinski-Harabasz**. Para a representação estrutural com K-means, a análise da **inércia pelo método do cotovelo** auxiliou na escolha do número final de grupos.
 
-Entre os bigrams relevantes aparecem:
+### Melhores resultados por representação
 
-- computer science
-- neural networks
-- computing education
-- software engineering
-- deep learning
-- machine learning
-- computer vision
-- real world
-- artificial intelligence
-- state art
+| Representação | Algoritmo | Grupos | Silhueta |
+|---|---|---:|---:|
+| Estrutural | K-means | 10 | **0,3357** |
+| Híbrida | K-means | 4 | 0,2271 |
+| Embeddings | K-means | 5 | 0,2151 |
+| TF-IDF | Hierárquico | 2 | 0,1035 |
+| BoW | K-means | 5 | 0,0980 |
 
-### 🧭 Frequência de seções
+Embora a maior silhueta tenha sido obtida com **10 grupos**, a configuração final selecionada foi **K-means sobre os indicadores estruturais com 4 grupos**, pois apresentou silhueta muito próxima (**0,3350**) e uma região de inflexão da inércia próxima de `k = 4`.
 
-A busca por marcadores de seção retornou maior presença de:
+**Métricas da configuração final:** silhueta = **0,3350**; Davies-Bouldin = **1,7352**; Calinski-Harabasz = **164,21**; cobertura = **100% dos 800 artigos**.
 
-| Seção | Frequência |
-|---|---:|
-| methods | 19.100 |
-| results | 10.435 |
-| background | 1.006 |
-| discussion | 767 |
-| abstract | 655 |
-| introduction | 465 |
-| conclusion | 459 |
-| related work | 226 |
-| related reviews | 10 |
+## Perfis estruturais identificados
 
-## 📊 Baseline com TF-IDF
+| Grupo | Artigos | Percentual | Caracterização predominante |
+|---:|---:|---:|---|
+| 0 | 220 | 27,5% | Extensão intermediária; presença de tabelas e vocabulário associado, em parte, à educação. |
+| 1 | 172 | 21,5% | Artigos mais curtos e menor quantidade de figuras. |
+| 2 | 208 | 26,0% | Artigos mais extensos, com maior número de figuras e maior densidade de citações. |
+| 3 | 200 | 25,0% | Maior densidade de elementos numéricos e maior presença mediana de equações. |
 
-O TF-IDF é usado como baseline lexical para identificar termos distintivos no corpus.
+Entre os resultados observados, **97%** dos artigos de *ACM Computing Surveys* e **90%** dos artigos de *Education and Information Technologies* foram atribuídos ao grupo 0. O grupo 2 concentrou **92,63%** dos artigos de *IEEE Communications Surveys and Tutorials*, enquanto o grupo 3 reuniu **71%** dos artigos de *Information Sciences* e **65%** dos artigos de *ISA Transactions*.
 
-Top termos por score médio:
+## Análises exploratórias complementares
 
-| Termo | Score |
-|---|---:|
-| image | 0,047188 |
-| students | 0,041053 |
-| education | 0,032775 |
-| graph | 0,031953 |
-| user | 0,030161 |
-| code | 0,029313 |
-| detection | 0,029211 |
-| images | 0,028451 |
-| software | 0,026677 |
-| video | 0,025395 |
-| spatial | 0,024668 |
-| privacy | 0,023162 |
-| security | 0,020535 |
-| temporal | 0,020365 |
-| edge | 0,020236 |
+A pesquisa também utilizou informações **não empregadas diretamente na formação dos agrupamentos finais**, mas relevantes para sua interpretação:
 
-## 🤖 Análise temática com embeddings BERT
+- **Palavras-chave dos autores:** identificadas em 781 artigos; maior recorrência de `machine learning`, `deep learning` e `artificial intelligence`.
+- **Similaridade temática:** análise de Jaccard entre conjuntos de palavras-chave dos periódicos e identificação de famílias temáticas em resumos com expressões regulares.
+- **Perfis metodológicos indicativos:** comparação semântica com descrições prototípicas das categorias teórico, qualitativo, quantitativo, experimental e revisão. A categoria experimental foi a mais frequente, com 433 artigos.
+- **Termos representativos:** uso de TF-IDF para apoiar a caracterização lexical dos agrupamentos.
+- **Unidades textuais:** comparação exploratória de *embeddings* produzidos a partir de textos completos, resumos e introduções, com diferentes quantidades de documentos disponíveis em cada análise.
 
-O notebook utiliza `sentence-transformers/all-MiniLM-L6-v2` para gerar embeddings dos artigos e aplicar KMeans com **5 clusters**.
+## Tecnologias utilizadas
 
-Os grupos encontrados indicam temas como:
+- **Linguagem e ambiente:** Python, Google Colab e Google Drive.
+- **Extração e manipulação:** PyPDF2, pandas e `concurrent.futures`.
+- **Processamento textual:** NLTK e expressões regulares.
+- **Representação e agrupamento:** scikit-learn e Sentence Transformers (`all-MiniLM-L6-v2`).
+- **Análise e visualização:** NumPy e Matplotlib.
 
-| Cluster | Interpretação aproximada |
-|---:|---|
-| 0 | Educação em Computação, ensino, programação, professores e estudantes. |
-| 1 | Gráficos, imagens, vídeo, multimídia e aplicações 3D. |
-| 2 | Algoritmos espaciais, grafos, predição, modelos temporais e sistemas. |
-| 3 | Federated learning, privacidade, segurança, IoT, redes e edge computing. |
-| 4 | Engenharia de software, código, testes, modelos e tecnologia. |
+## Reprodução da pesquisa
 
-Essa etapa funciona como análise temática auxiliar, distinta do pipeline principal de escrita.
+1. Organize os PDFs dos artigos em diretórios separados por periódico.
+2. Execute o **Pipeline 1** para extrair os textos e gerar o corpus tabular em CSV.
+3. Disponibilize o CSV ao **Pipeline 2** e realize a validação e o pré-processamento.
+4. Gere as cinco representações dos artigos e execute os algoritmos de agrupamento.
+5. Compare as métricas, selecione a configuração estrutural com `k = 4` e examine os perfis e sua distribuição por periódico.
 
-## 🧱 Pipeline principal: padrões gerais de escrita científica
+A reprodução exata dos resultados exige a mesma seleção de artigos e os mesmos parâmetros de processamento e agrupamento utilizados na execução da dissertação. Os notebooks e os arquivos de entrada devem ser consultados para verificar os caminhos e as configurações específicas do ambiente.
 
-O notebook `pipeline_padroes_gerais_escrita_cientifica.ipynb` é o núcleo metodológico mais maduro do projeto.
+## Limitações e interpretação
 
-Ele analisa o texto completo dos artigos sem separar por seção, usando sentenças como unidade de análise.
+**Os quatro grupos identificados representam predominantemente perfis estruturais de publicação, e não uma comprovação de estilos linguísticos ou discursivos distintos.** Características como extensão, figuras, equações e citações também podem refletir diferenças temáticas, metodológicas e editoriais.
 
-### 🧬 Padrões retóricos detectados
+Além disso, a pesquisa foi delimitada a oito periódicos e depende de procedimentos automáticos de extração textual de arquivos PDF, sujeitos a variações de formatação. As métricas internas avaliam os agrupamentos no espaço de atributos escolhido, mas não substituem uma validação externa ou uma análise linguística detalhada.
 
-Os rótulos principais são:
+Como continuidade, propõe-se ampliar o corpus, aperfeiçoar a extração e a validação das características documentais e aprofundar a comparação entre diferentes seções textuais dos artigos.
 
-- `contextualizacao`
-- `lacuna_problema`
-- `objetivo_contribuicao`
-- `metodo_procedimento`
-- `resultado_achado`
-- `implicacao_conclusao`
-- `limitacao_futuro`
-- `sem_marcador_explicito`
+## Autoria
 
-### 🔗 Tipos de conectores
+**Gabriel Evaristo Santana da Silva**  
+Mestrado em Ciência da Computação — Universidade Tecnológica Federal do Paraná (UTFPR)  
+**Orientador:** Prof. Dr. Ionildo José Sanches  
+**Ano:** 2026
 
-O pipeline também classifica conectores por função discursiva:
-
-- adição
-- contraste
-- causa e efeito
-- sequência
-- exemplo
-- comparação
-- condição
-- ênfase
-
-## 📌 Resultados principais
-
-Foram analisados **800 artigos** e **232.355 sentenças válidas**.
-
-### 🧾 Distribuição dos padrões retóricos
-
-| Padrão retórico | Sentenças | Percentual |
-|---|---:|---:|
-| sem_marcador_explicito | 158.312 | 68,13% |
-| metodo_procedimento | 23.788 | 10,24% |
-| lacuna_problema | 21.528 | 9,27% |
-| resultado_achado | 14.809 | 6,37% |
-| implicacao_conclusao | 7.144 | 3,07% |
-| objetivo_contribuicao | 3.086 | 1,33% |
-| contextualizacao | 1.875 | 0,81% |
-| limitacao_futuro | 1.813 | 0,78% |
-
-### 🔗 Conectores mais frequentes
-
-| Tipo de conector | Frequência | Ocorrências por 1.000 sentenças |
-|---|---:|---:|
-| contraste | 24.530 | 105,57 |
-| sequência | 24.100 | 103,72 |
-| causa_efeito | 20.263 | 87,21 |
-| adição | 19.160 | 82,46 |
-| condição | 13.449 | 57,88 |
-| exemplo | 13.183 | 56,74 |
-| ênfase | 4.009 | 17,25 |
-| comparação | 3.728 | 16,04 |
-
-## ✍️ Perfis gerais de escrita por artigo
-
-O pipeline agrega as sentenças por artigo para calcular indicadores como:
-
-- número de sentenças;
-- média e mediana de palavras por sentença;
-- conectores por sentença;
-- marcadores retóricos por sentença;
-- percentual de primeira pessoa;
-- percentual de modalização;
-- aproximação de voz passiva;
-- distribuição percentual dos padrões retóricos;
-- taxa de conectores por 1.000 sentenças.
-
-## 🧩 Clustering por estilo
-
-O agrupamento por perfil de escrita utiliza KMeans sobre características agregadas por artigo.
-
-O melhor valor encontrado foi **k = 2**, escolhido por silhouette.
-
-| Cluster | Quantidade de artigos | Caracterização aproximada |
-|---:|---:|---|
-| 0 | 503 | Maior presença relativa de método, objetivo/contribuição e sentenças sem marcador explícito. |
-| 1 | 297 | Maior uso de conectores, especialmente contraste, adição, causa e efeito, exemplo e condição; também maior presença de lacuna/problema. |
-
----
-
-## 👤 Autor
-
-Gabriel Evaristo
+**Título da dissertação:** *Modelo Computacional Baseado em Processamento de Linguagem Natural para Identificação e Caracterização de Perfis de Escrita em Periódicos Científicos da Área da Computação*.
